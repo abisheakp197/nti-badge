@@ -1,12 +1,10 @@
 name: Validate Badge System
 
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 
 jobs:
   validate:
@@ -18,7 +16,7 @@ jobs:
           python-version: "3.12"
       - name: Verify Python syntax (all files)
         run: |
-          python -m compileall api lib
+          python -m compileall api api_handlers lib
           echo "All Python files compile successfully"
       - name: Verify required files present
         run: |
@@ -30,14 +28,16 @@ jobs:
           test -f docs/NTI-CERT-SPEC.md
           test -f public/index.html
           test -f public/repo.html
-          test -f api/badge.py
-          test -f api/verify.py
-          test -f api/registry.py
-          test -f api/leaderboard.py
-          test -f api/certificate.py
-          test -f api/transparency.py
-          test -f api/org.py
-          test -f api/federation.py
+          test -f api/index.py
+          test -f api_handlers/badge.py
+          test -f api_handlers/verify.py
+          test -f api_handlers/registry.py
+          test -f api_handlers/leaderboard.py
+          test -f api_handlers/certificate.py
+          test -f api_handlers/transparency.py
+          test -f api_handlers/org.py
+          test -f api_handlers/federation.py
+          test -f lib/routes.py
           test -f lib/oidc.py
           test -f lib/store.py
           test -f lib/crypto.py
