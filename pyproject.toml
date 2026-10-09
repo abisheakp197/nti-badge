@@ -1,0 +1,16 @@
+[project]
+name = "nti-badge"
+version = "0.1.0"
+description = "Federated compliance certificates for AI agent repositories"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27.0",
+    "redis>=5.0.0",
+    "pyjwt[crypto]>=2.8.0",
+    "cryptography>=42.0.0",
+    "ube-foundation>=0.1.7",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
