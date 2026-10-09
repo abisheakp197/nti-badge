@@ -1,8 +1,8 @@
 {
   "version": 2,
   "builds": [
-    {"src": "api/*.py", "use": "@vercel/python"},
-    {"src": "api/hub/*.py", "use": "@vercel/python"},
+    {"src": "api/*.py", "use": "@vercel/python", "config": { "runtime": "python3.11" }},
+    {"src": "api/hub/*.py", "use": "@vercel/python", "config": { "runtime": "python3.11" }},
     {"src": "public/**", "use": "@vercel/static"}
   ],
   "routes": [
