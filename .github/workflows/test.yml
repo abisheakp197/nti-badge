@@ -1,0 +1,48 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-asyncio httpx redis pyjwt cryptography
+          pip install ube-foundation || echo "ube-foundation optional"
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run unit tests
+        run: pytest tests/unit -v
+
+      - name: Run contract tests
+        run: pytest tests/contract -v
+
+      - name: Run integration tests
+        run: pytest tests/integration -v
+
+      - name: Run failure tests
+        run: pytest tests/failure -v
+
+      - name: Run security tests
+        run: pytest tests/security -v
+
+      - name: Run regression tests
+        run: pytest tests/regression -v
+
+      - name: Run load tests
+        run: pytest tests/load -v
+
+      - name: Full suite with coverage
+        run: |
+          pip install pytest-cov
+          pytest tests/ --cov=lib --cov=api --cov-report=term-missing || true

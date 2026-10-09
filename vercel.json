@@ -2,6 +2,7 @@
   "version": 2,
   "builds": [
     {"src": "api/*.py", "use": "@vercel/python"},
+    {"src": "api/hub/*.py", "use": "@vercel/python"},
     {"src": "public/**", "use": "@vercel/static"}
   ],
   "routes": [
@@ -13,6 +14,12 @@
     {"src": "/api/transparency", "dest": "api/transparency.py"},
     {"src": "/api/org", "dest": "api/org.py"},
     {"src": "/api/federation", "dest": "api/federation.py"},
+    {"src": "/api/mode", "dest": "api/mode.py"},
+    {"src": "/api/federation/publish", "dest": "api/federation_publish.py"},
+    {"src": "/api/hub/register", "dest": "api/hub/register.py"},
+    {"src": "/api/hub/nodes", "dest": "api/hub/nodes.py"},
+    {"src": "/api/hub/index", "dest": "api/hub/index.py"},
+    {"src": "/api/hub/leaderboard", "dest": "api/hub/leaderboard.py"},
     {"src": "/(.*)", "dest": "public/$1"}
   ]
 }

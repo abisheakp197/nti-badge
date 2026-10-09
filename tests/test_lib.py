@@ -121,7 +121,7 @@ def test_oidc_verification():
 
 
 @pytest.mark.asyncio
-async def test_store_fallback_in_memory():
+async def test_store_fallback_in_memory(temp_store):
     # Without REDIS_URL, store returns empty structures gracefully
     assert await store.get_latest("owner/repo") is None
     assert await store.get_history("owner/repo") == []
