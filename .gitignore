@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.vercel
+.env
+.env.local
+.DS_Store
+node_modules/
+nti-report.json
+nti-sbom.json
+
+# Note: nti-certificate.json should be COMMITTED by users to their repo so it becomes part of their permanent audit trail

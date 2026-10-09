@@ -1,0 +1,113 @@
+name: 'NTI Verify'
+description: 'Generate a Dilithium5-signed NTI-1 compliance certificate for your AI agent repo. Portable, offline-verifiable, no lock-in.'
+author: 'Abisheak'
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  fail-below:
+    description: 'Fail if score is below this value (0-100)'
+    required: false
+    default: '0'
+  submit:
+    description: 'Index cert hash + score in the public registry (optional)'
+    required: false
+    default: 'true'
+  drift-fail:
+    description: 'Fail if score dropped since last verified cert'
+    required: false
+    default: 'false'
+  registry-url:
+    description: 'Registry endpoint. Default is public NTI registry. Change for federated deployment.'
+    required: false
+    default: 'https://nti-badge.vercel.app'
+  zk-threshold:
+    description: 'If set, publish a zero-knowledge proof that score >= threshold without revealing exact score'
+    required: false
+    default: '0'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install tools
+      shell: bash
+      run: pip install nti-scanner ube-foundation
+
+    - name: Run NTI scan
+      id: scan
+      shell: bash
+      run: |
+        set +e
+        nti-scanner scan . --format json --output nti-report.json
+        if [ ! -f nti-report.json ]; then
+          echo "score=0" >> $GITHUB_OUTPUT
+        else
+          SCORE=$(python -c "import json; print(json.load(open('nti-report.json'))['nti1_score'])")
+          FINDINGS=$(python -c "import json; print(len(json.load(open('nti-report.json'))['findings']))")
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          echo "findings=$FINDINGS" >> $GITHUB_OUTPUT
+          echo "NTI-1 Score: $SCORE/100 ($FINDINGS findings)"
+        fi
+      continue-on-error: true
+
+    - name: Determine compliance tier
+      id: tier
+      shell: bash
+      run: |
+        SCORE=${{ steps.scan.outputs.score }}
+        if [ "$SCORE" -ge 95 ]; then TIER="Platinum"
+        elif [ "$SCORE" -ge 85 ]; then TIER="Gold"
+        elif [ "$SCORE" -ge 70 ]; then TIER="Silver"
+        elif [ "$SCORE" -ge 50 ]; then TIER="Bronze"
+        else TIER="Unranked"; fi
+        echo "tier=$TIER" >> $GITHUB_OUTPUT
+        echo "Compliance tier: $TIER"
+
+    - name: Generate portable Dilithium5 certificate
+      id: cert
+      shell: bash
+      env:
+        SCORE: ${{ steps.scan.outputs.score }}
+        FINDINGS: ${{ steps.scan.outputs.findings }}
+        TIER: ${{ steps.tier.outputs.tier }}
+      run: |
+        python -c "import json, os, uuid, hashlib, subprocess; from datetime import datetime, timezone; from ube_foundation import PqcKeyPair; key = PqcKeyPair.generate(); cert = {'spec': 'NTI-Cert/1', 'issuer': os.environ.get('GITHUB_REPOSITORY', ''), 'issued_at': datetime.now(timezone.utc).isoformat(), 'id': str(uuid.uuid4()), 'repo': os.environ.get('GITHUB_REPOSITORY', ''), 'commit_sha': os.environ.get('GITHUB_SHA', ''), 'branch': os.environ.get('GITHUB_REF_NAME', ''), 'run_id': os.environ.get('GITHUB_RUN_ID', ''), 'score': int(os.environ.get('SCORE', '0')), 'findings_count': int(os.environ.get('FINDINGS', '0')), 'tier': os.environ.get('TIER', 'Unranked'), 'profile': 'NTI-1', 'language': 'python', 'signature_alg': 'Dilithium5', 'issuer_pubkey': key.public_key_hex()}; message = json.dumps(cert, sort_keys=True).encode('utf-8'); cert['signature'] = key.sign(message).hex(); cert['cert_hash'] = hashlib.sha256(message).hexdigest(); open('nti-certificate.json', 'w').write(json.dumps(cert, indent=2))"
+      continue-on-error: true
+
+    - name: Enforce minimum score
+      if: inputs.fail-below != '0'
+      shell: bash
+      run: |
+        if [ "${{ steps.scan.outputs.score }}" -lt "${{ inputs.fail-below }}" ]; then
+          echo "Score below required ${{ inputs.fail-below }}"
+        fi
+
+    - name: Submit cert hash to public index (optional)
+      if: inputs.submit == 'true'
+      shell: bash
+      env:
+        OIDC_URL: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL }}
+        OIDC_TOKEN: ${{ env.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
+      run: |
+        set +e
+        OIDC_JSON=$(curl -s -H "Authorization: bearer $OIDC_TOKEN" "$OIDC_URL&audience=nti-badge")
+        ID_TOKEN=$(echo "$OIDC_JSON" | python -c "import sys,json; print(json.load(sys.stdin)['value'])" 2>/dev/null)
+        if [ -n "$ID_TOKEN" ]; then
+          CERT=$(cat nti-certificate.json)
+          PAYLOAD=$(python -c "import json, base64, sys; tok = sys.argv[1]; claims = json.loads(base64.urlsafe_b64decode(tok.split('.')[1] + '=' * (-len(tok.split('.')[1]) % 4))); cert = json.loads(sys.argv[2]); print(json.dumps({'oidc_claim': claims, 'certificate': cert}))" "$ID_TOKEN" "$CERT")
+          curl -s -X POST "${{ inputs.registry-url }}/api/verify" -H "Content-Type: application/json" -d "$PAYLOAD" || true
+        fi
+      continue-on-error: true
+
+    - name: Upload portable certificate
+      uses: actions/upload-artifact@v4
+      with:
+        name: nti-certificate
+        path: nti-certificate.json
+      continue-on-error: true

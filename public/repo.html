@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NTI-1 Repo Transparency</title>
+<style>
+body{font-family:system-ui;background:#0a0a0a;color:#eee;padding:2rem;max-width:900px;margin:auto;line-height:1.6}
+h1,h2{color:#fff}
+code,pre{background:#111;padding:.2rem .5rem;border-radius:5px;color:#4ade80;font-family:ui-monospace,monospace}
+pre{padding:1rem;overflow-x:auto;border:1px solid #222}
+table{width:100%;border-collapse:collapse;margin:1rem 0}
+th,td{text-align:left;padding:.6rem;border-bottom:1px solid #222}
+th{color:#888;font-weight:500;font-size:.85rem}
+a{color:#22d3ee}
+#output{margin-top:1rem}
+.muted{color:#888}
+</style>
+</head>
+<body>
+<h1>Repo Transparency Page</h1>
+<p class="muted">Look up the NTI-1 verification history of any repo.</p>
+
+
+<form id="lookup" onsubmit="return false">
+<input id="repo" placeholder="owner/repo" style="padding:.6rem;background:#111;color:#eee;border:1px solid #333;border-radius:6px;width:60%">
+<button style="padding:.6rem 1rem;background:#4ade80;color:#000;border:0;border-radius:6px;font-weight:600;cursor:pointer" onclick="loadRepo()">Look up</button>
+</form>
+
+
+<div id="output"></div>
+
+
+<script>
+function esc(s){return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function loadRepo(){
+  const repo = document.getElementById('repo').value.trim();
+  const out = document.getElementById('output');
+  if (!repo.includes('/')) { out.innerHTML = '<p style="color:#ef4444">Use owner/repo format</p>'; return; }
+  out.innerHTML = '<p class="muted">Loading…</p>';
+  try {
+    const r = await fetch('/api/certificate?repo=' + encodeURIComponent(repo));
+    const data = await r.json();
+    if (!data.latest) { out.innerHTML = '<p>No NTI-1 certificate indexed for this repo yet.</p>'; return; }
+    let html = '<h2>Latest verified certificate</h2>';
+    html += '<table><tr><th>Field</th><th>Value</th></tr>';
+    const fields = ['repo','score','tier','commit_sha','timestamp','cert_hash','signature_verified'];
+    for (const f of fields) {
+      if (data.latest[f] !== undefined) html += '<tr><td>' + esc(f) + '</td><td><code>' + esc(data.latest[f]) + '</code></td></tr>';
+    }
+    html += '</table>';
+    html += '<h2>History (' + data.history_count + ' entries)</h2>';
+    html += '<table><tr><th>Timestamp</th><th>Score</th><th>Tier</th><th>Commit</th></tr>';
+    for (const h of (data.history||[]).slice().reverse().slice(0,25)) {
+      html += '<tr><td>' + esc(h.timestamp) + '</td><td>' + esc(h.score) + '</td><td>' + esc(h.tier||'') + '</td><td><code>' + esc((h.commit_sha||'').slice(0,8)) + '</code></td></tr>';
+    }
+    html += '</table>';
+    html += '<h2>Verify offline</h2><pre>pip install nti-scanner\nnti-scanner verify ./nti-certificate.json</pre>';
+    out.innerHTML = html;
+  } catch (e) { out.innerHTML = '<p style="color:#ef4444">Lookup failed.</p>'; }
+}
+</script>
+</body>
+</html>
