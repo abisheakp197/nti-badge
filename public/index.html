@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NTI-1 Verified Badge — Federated AI Agent Compliance</title>
+<style>
+:root{--bg:#0a0a0a;--fg:#eee;--muted:#888;--accent:#4ade80;--card:#111;--border:#222}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);padding:2rem;max-width:920px;margin:auto;line-height:1.65}
+h1,h2,h3{color:#fff;line-height:1.25}
+h1{font-size:2.2rem;margin-bottom:.5rem}
+code{background:var(--card);padding:.15rem .45rem;border-radius:5px;color:var(--accent);font-size:.92em;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+pre{background:var(--card);padding:1rem 1.2rem;border-radius:10px;overflow-x:auto;color:var(--accent);border:1px solid var(--border);font-size:.88em;line-height:1.5}
+a{color:#22d3ee;text-decoration:none}
+a:hover{text-decoration:underline}
+.muted{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.5rem 0}
+.badge-row{display:flex;gap:1rem;flex-wrap:wrap;margin:1rem 0}
+hr{border:0;border-top:1px solid var(--border);margin:2.5rem 0}
+.pill{display:inline-block;background:#1a1a1a;border:1px solid var(--border);padding:.2rem .7rem;border-radius:999px;font-size:.82rem;margin-right:.4rem;color:var(--accent)}
+</style>
+</head>
+<body>
+
+
+<h1>NTI-1 Verified Badge</h1>
+<p class="muted">Federated, post-quantum signed, zero-lock-in compliance certificates for AI agent projects.</p>
+
+
+<div class="badge-row">
+  <span class="pill">Dilithium5 signed</span>
+  <span class="pill">Multi-OIDC</span>
+  <span class="pill">Offline verifiable</span>
+  <span class="pill">Federated</span>
+  <span class="pill">Zero data lock-in</span>
+</div>
+
+
+<div class="card">
+<h3>Live badge</h3>
+<div class="badge-row">
+  <img src="/api/badge?repo=abisheakp197/nti-scanner" alt="NTI-1 badge demo">
+  <img src="/api/badge?repo=example/not-yet-verified" alt="unverified demo">
+</div>
+</div>
+
+
+<hr>
+
+
+<h2>The problem this solves</h2>
+<p>Every enterprise deploying AI agents has the same question: <em>"Is this agent actually secure, and can I prove it to an auditor?"</em> Today, the answer is a marketing PDF. It cannot be verified. It cannot be trusted.</p>
+<p>NTI gives every AI agent repo a <strong>portable, cryptographically signed compliance certificate</strong> that any third party can verify offline in seconds. No server. No subscription. No lock-in.</p>
+
+
+<hr>
+
+
+<h2>Why this is different</h2>
+<table style="width:100%;border-collapse:collapse;margin:1rem 0">
+<thead><tr style="text-align:left;border-bottom:1px solid var(--border)"><th style="padding:.6rem 0">Traditional badge</th><th>NTI verified badge</th></tr></thead>
+<tbody>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.6rem 0">Self-reported score</td><td>OIDC + Dilithium5 signed</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.6rem 0">Vendor holds your data</td><td>Your repo holds the cert</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.6rem 0">GitHub only</td><td>GitHub, GitLab, Azure, Google, custom</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.6rem 0">Cannot verify offline</td><td>Verify with one command, no network</td></tr>
+<tr><td style="padding:.6rem 0">Centralized</td><td>Federated — anyone can mirror</td></tr>
+</tbody>
+</table>
+
+
+<hr>
+
+
+<h2>Install in 2 steps</h2>
+
+
+<h3>1. Add this to .github/workflows/nti.yml</h3>
+<pre>name: NTI Verify
+on: [push, pull_request]
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: abisheakp197/nti-badge@v1
+      - name: Commit certificate
+        run: |
+          git config user.name "nti-bot"
+          git config user.email "bot@nti.local"
+          git add nti-certificate.json
+          git commit -m "chore: NTI certificate [skip ci]" || true
+          git push || true</pre>
+
+
+<h3>2. Add the badge to your README</h3>
+<pre>[![NTI-1 Verified](https://nti-badge.vercel.app/api/badge?repo=your-org/your-repo)](https://nti-badge.vercel.app/repo.html?repo=your-org/your-repo)</pre>
+
+
+<hr>
+
+
+<h2>Verify any certificate offline</h2>
+<pre>pip install nti-scanner
+nti-scanner verify ./nti-certificate.json</pre>
+<p class="muted">No network. No NTI servers. Just math.</p>
+
+
+<hr>
+
+
+<h2>Federation</h2>
+<p>NTI is a protocol, not a product. Any company, university, or government can run their own mirror node. See the <a href="/api/federation">federation manifest</a> for the full spec.</p>
+
+
+<hr>
+
+
+<h2>Endpoints</h2>
+<ul>
+<li><a href="/api/registry">/api/registry</a> — index of all verified repos</li>
+<li><a href="/api/leaderboard">/api/leaderboard</a> — top 50 by score</li>
+<li><a href="/api/transparency">/api/transparency</a> — append-only public log</li>
+<li><a href="/api/federation">/api/federation</a> — federation manifest</li>
+<li><a href="/api/certificate?repo=abisheakp197/nti-scanner">/api/certificate</a> — index entry for a repo</li>
+<li><a href="/api/org?name=abisheakp197">/api/org</a> — org-level aggregate score</li>
+</ul>
+
+
+<h2>Links</h2>
+<ul>
+<li><a href="https://abisheakp197.github.io/nti-spec/">NTI-1 Specification</a></li>
+<li><a href="https://pypi.org/project/nti-scanner/">nti-scanner (PyPI)</a></li>
+<li><a href="https://pypi.org/project/ube-foundation/">ube-foundation (PyPI)</a></li>
+<li><a href="https://github.com/abisheakp197/nti-badge">Source code</a></li>
+</ul>
+
+
+</body>
+</html>

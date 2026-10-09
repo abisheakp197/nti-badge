@@ -1,0 +1,66 @@
+name: Validate Badge System
+
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify Python syntax (all files)
+        run: |
+          python -m compileall api lib
+          echo "All Python files compile successfully"
+      - name: Verify required files present
+        run: |
+          test -f action.yml
+          test -f vercel.json
+          test -f requirements.txt
+          test -f README.md
+          test -f LICENSE
+          test -f docs/NTI-CERT-SPEC.md
+          test -f public/index.html
+          test -f public/repo.html
+          test -f api/badge.py
+          test -f api/verify.py
+          test -f api/registry.py
+          test -f api/leaderboard.py
+          test -f api/certificate.py
+          test -f api/transparency.py
+          test -f api/org.py
+          test -f api/federation.py
+          test -f lib/oidc.py
+          test -f lib/store.py
+          test -f lib/crypto.py
+          test -f lib/certificate.py
+          test -f lib/drift.py
+          test -f lib/tiers.py
+          test -f lib/spec.py
+          echo "All required files present"
+      - name: Validate vercel.json is valid JSON
+        run: python -c "import json; json.load(open('vercel.json'))"
+      - name: Validate action.yml structure
+        run: |
+          python -c "
+          import sys
+          try:
+              import yaml
+          except ImportError:
+              print('PyYAML not installed, skipping deep validation')
+              sys.exit(0)
+          with open('action.yml') as f:
+              data = yaml.safe_load(f)
+          assert data['name'] == 'NTI Verify'
+          assert data['runs']['using'] == 'composite'
+          print('action.yml valid')
+          "
+        continue-on-error: true

@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {"src": "api/*.py", "use": "@vercel/python"},
+    {"src": "public/**", "use": "@vercel/static"}
+  ],
+  "routes": [
+    {"src": "/api/badge", "dest": "api/badge.py"},
+    {"src": "/api/verify", "dest": "api/verify.py"},
+    {"src": "/api/registry", "dest": "api/registry.py"},
+    {"src": "/api/leaderboard", "dest": "api/leaderboard.py"},
+    {"src": "/api/certificate", "dest": "api/certificate.py"},
+    {"src": "/api/transparency", "dest": "api/transparency.py"},
+    {"src": "/api/org", "dest": "api/org.py"},
+    {"src": "/api/federation", "dest": "api/federation.py"},
+    {"src": "/(.*)", "dest": "public/$1"}
+  ]
+}
