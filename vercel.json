@@ -1,25 +1,11 @@
 {
   "version": 2,
   "builds": [
-    {"src": "api/*.py", "use": "@vercel/python", "config": { "runtime": "python3.12" }},
-    {"src": "api/hub/*.py", "use": "@vercel/python", "config": { "runtime": "python3.12" }},
+    {"src": "api/index.py", "use": "@vercel/python"},
     {"src": "public/**", "use": "@vercel/static"}
   ],
   "routes": [
-    {"src": "/api/badge", "dest": "api/badge.py"},
-    {"src": "/api/verify", "dest": "api/verify.py"},
-    {"src": "/api/registry", "dest": "api/registry.py"},
-    {"src": "/api/leaderboard", "dest": "api/leaderboard.py"},
-    {"src": "/api/certificate", "dest": "api/certificate.py"},
-    {"src": "/api/transparency", "dest": "api/transparency.py"},
-    {"src": "/api/org", "dest": "api/org.py"},
-    {"src": "/api/federation", "dest": "api/federation.py"},
-    {"src": "/api/mode", "dest": "api/mode.py"},
-    {"src": "/api/federation/publish", "dest": "api/federation_publish.py"},
-    {"src": "/api/hub/register", "dest": "api/hub/register.py"},
-    {"src": "/api/hub/nodes", "dest": "api/hub/nodes.py"},
-    {"src": "/api/hub/index", "dest": "api/hub/index.py"},
-    {"src": "/api/hub/leaderboard", "dest": "api/hub/leaderboard.py"},
+    {"src": "/api/(.*)", "dest": "api/index.py"},
     {"src": "/(.*)", "dest": "public/$1"}
   ]
 }

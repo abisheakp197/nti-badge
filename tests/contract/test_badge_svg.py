@@ -1,5 +1,5 @@
 """Contract tests for /api/badge SVG output."""
-from api.badge import _badge_svg
+from api_handlers.badge import _badge_svg
 
 
 def test_badge_svg_valid_xml():
