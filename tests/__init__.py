@@ -1,0 +1,1 @@
+"""NTI Badge test suite."""

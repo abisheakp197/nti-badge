@@ -1,0 +1,3 @@
+{
+  "testorg/testrepo": "{\"repo\": \"testorg/testrepo\", \"score\": 95, \"cert_hash\": \"aabe11a5bcbcacad4aa6b6481ecde4d8de2bfd0549b0f64cd549312b45c46872\", \"commit_sha\": \"abc1234\", \"timestamp\": \"2025-01-01T00:00:00Z\", \"issuer_pubkey\": \"0x123\", \"signature\": \"0xsig\", \"tier\": \"Unranked\", \"profile\": \"NTI-1\", \"signature_verified\": false, \"drift\": {\"direction\": \"stable\", \"delta\": 0, \"previous\": 95, \"current\": 95}}"
+}

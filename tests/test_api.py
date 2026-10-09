@@ -83,17 +83,17 @@ def test_registry_leaderboard_transparency_endpoints():
         assert isinstance(res, dict)
 
 
-def test_org_endpoint():
-    req = MockRequest("GET", "/api/org?name=testorg")
+def test_org_endpoint(temp_store):
+    req = MockRequest("GET", "/api/org?name=nonexistentorg")
     h, wfile = req.make_handler(OrgHandler)
     h.do_GET()
     assert h.response_code == 200
     res = json.loads(wfile.getvalue().decode("utf-8"))
-    assert res["org"] == "testorg"
+    assert res["org"] == "nonexistentorg"
     assert res["repo_count"] == 0
 
 
-def test_certificate_endpoint():
+def test_certificate_endpoint(temp_store):
     req = MockRequest("GET", "/api/certificate?repo=test/repo")
     h, wfile = req.make_handler(CertificateHandler)
     h.do_GET()
@@ -102,7 +102,7 @@ def test_certificate_endpoint():
     assert res["repo"] == "test/repo"
 
 
-def test_verify_endpoint_valid_and_invalid():
+def test_verify_endpoint_valid_and_invalid(temp_store):
     # 1. Invalid JSON
     req1 = MockRequest("POST", "/api/verify", body=b"invalid-json")
     h1, wfile1 = req1.make_handler(VerifyHandler)
