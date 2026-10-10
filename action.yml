@@ -21,7 +21,7 @@ inputs:
   registry-url:
     description: 'Registry endpoint. Default is public NTI registry. Change for federated deployment.'
     required: false
-    default: 'https://nti-badge.vercel.app'
+    default: 'https://nti-badge-svs1.vercel.app'
   zk-threshold:
     description: 'If set, publish a zero-knowledge proof that score >= threshold without revealing exact score'
     required: false

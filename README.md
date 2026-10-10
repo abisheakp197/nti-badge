@@ -62,7 +62,7 @@ Every scan produces a `nti-certificate.json` file that lives in **your** reposit
 ### 2. Add the badge to your README
 
 
-    [![NTI-1 Verified](https://nti-badge.vercel.app/api/badge?repo=your-org/your-repo)](https://nti-badge.vercel.app/repo.html?repo=your-org/your-repo)
+    [![NTI-1 Verified](https://nti-badge-svs1.vercel.app/api/badge?repo=your-org/your-repo)](https://nti-badge-svs1.vercel.app/repo.html?repo=your-org/your-repo)
 
 
 ## Verify Offline
