@@ -4,14 +4,7 @@ import io
 import time
 import pytest
 from lib.crypto import compute_cert_hash
-from api.badge import handler as BadgeHandler
-from api.verify import handler as VerifyHandler
-from api.registry import handler as RegistryHandler
-from api.leaderboard import handler as LeaderboardHandler
-from api.certificate import handler as CertificateHandler
-from api.transparency import handler as TransparencyHandler
-from api.org import handler as OrgHandler
-from api.federation import handler as FederationHandler
+from api.index import handler as IndexHandler
 
 
 class MockRequest:
@@ -55,7 +48,7 @@ class MockRequest:
 
 def test_federation_endpoint():
     req = MockRequest("GET", "/api/federation")
-    h, wfile = req.make_handler(FederationHandler)
+    h, wfile = req.make_handler(IndexHandler)
     h.do_GET()
     res = json.loads(wfile.getvalue().decode("utf-8"))
     assert res["protocol"] == "NTI-Cert/1"
@@ -64,7 +57,7 @@ def test_federation_endpoint():
 
 def test_badge_endpoint_default_and_unranked():
     req = MockRequest("GET", "/api/badge?repo=unknown/repo")
-    h, wfile = req.make_handler(BadgeHandler)
+    h, wfile = req.make_handler(IndexHandler)
     h.do_GET()
     assert h.response_code == 200
     assert "image/svg+xml" in h.response_headers["Content-Type"]
@@ -74,9 +67,9 @@ def test_badge_endpoint_default_and_unranked():
 
 
 def test_registry_leaderboard_transparency_endpoints():
-    for handler_cls in [RegistryHandler, LeaderboardHandler, TransparencyHandler]:
-        req = MockRequest("GET", "/")
-        h, wfile = req.make_handler(handler_cls)
+    for endpoint in ["/api/registry", "/api/leaderboard", "/api/transparency"]:
+        req = MockRequest("GET", endpoint)
+        h, wfile = req.make_handler(IndexHandler)
         h.do_GET()
         assert h.response_code == 200
         res = json.loads(wfile.getvalue().decode("utf-8"))
@@ -85,7 +78,7 @@ def test_registry_leaderboard_transparency_endpoints():
 
 def test_org_endpoint(temp_store):
     req = MockRequest("GET", "/api/org?name=nonexistentorg")
-    h, wfile = req.make_handler(OrgHandler)
+    h, wfile = req.make_handler(IndexHandler)
     h.do_GET()
     assert h.response_code == 200
     res = json.loads(wfile.getvalue().decode("utf-8"))
@@ -95,7 +88,7 @@ def test_org_endpoint(temp_store):
 
 def test_certificate_endpoint(temp_store):
     req = MockRequest("GET", "/api/certificate?repo=test/repo")
-    h, wfile = req.make_handler(CertificateHandler)
+    h, wfile = req.make_handler(IndexHandler)
     h.do_GET()
     assert h.response_code == 200
     res = json.loads(wfile.getvalue().decode("utf-8"))
@@ -105,14 +98,14 @@ def test_certificate_endpoint(temp_store):
 def test_verify_endpoint_valid_and_invalid(temp_store):
     # 1. Invalid JSON
     req1 = MockRequest("POST", "/api/verify", body=b"invalid-json")
-    h1, wfile1 = req1.make_handler(VerifyHandler)
+    h1, wfile1 = req1.make_handler(IndexHandler)
     h1.do_POST()
     assert h1.response_code == 400
 
     # 2. Invalid OIDC
     body2 = json.dumps({"oidc_claim": {}, "certificate": {}}).encode("utf-8")
     req2 = MockRequest("POST", "/api/verify", headers={"content-length": str(len(body2))}, body=body2)
-    h2, wfile2 = req2.make_handler(VerifyHandler)
+    h2, wfile2 = req2.make_handler(IndexHandler)
     h2.do_POST()
     assert h2.response_code == 401
 
@@ -141,7 +134,7 @@ def test_verify_endpoint_valid_and_invalid(temp_store):
 
     body3 = json.dumps({"oidc_claim": oidc_claim, "certificate": raw_cert}).encode("utf-8")
     req3 = MockRequest("POST", "/api/verify", headers={"content-length": str(len(body3))}, body=body3)
-    h3, wfile3 = req3.make_handler(VerifyHandler)
+    h3, wfile3 = req3.make_handler(IndexHandler)
     h3.do_POST()
     assert h3.response_code == 200
     res3 = json.loads(wfile3.getvalue().decode("utf-8"))
