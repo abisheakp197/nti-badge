@@ -4,7 +4,7 @@
 **A federated, post-quantum-signed compliance certificate system for AI agent repositories.**
 
 
-[![PyPI](https://img.shields.io/badge/pypi-ube--foundation-blue)](https://pypi.org/project/ube-foundation/)
+[![PyPI](https://img.shields.io/badge/pypi-nti--badge-blue)](https://pypi.org/project/nti-badge/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 
@@ -12,6 +12,51 @@
 
 
 The NTI-1 Badge is not a badge. It is a protocol. It gives every AI agent repository a **portable, cryptographically signed compliance certificate** that any third party can verify offline. No subscription. No data lock-in. No central authority.
+
+
+## Live Service
+
+
+The live service is deployed at: **https://nti-badge-svs1.vercel.app**
+
+- **Live Service:** https://nti-badge-svs1.vercel.app
+- **Public Registry:** https://nti-badge-svs1.vercel.app/api/registry
+- **Leaderboard:** https://nti-badge-svs1.vercel.app/api/leaderboard
+
+
+## Installation
+
+
+Install `nti-badge` from PyPI:
+
+```bash
+pip install nti-badge
+```
+
+
+## Python API Usage
+
+
+Embed badge generation and certificate verification in your Python code:
+
+```python
+import nti_badge
+
+# Render an SVG badge
+svg_content = nti_badge.render_badge_svg(
+    label="NTI-1",
+    value="95/100 Platinum",
+    color="#e5e4e2",
+    tier_emoji="🏆"
+)
+
+# Parse and validate an NTI-Cert/1 certificate
+cert = nti_badge.parse_certificate(cert_json_dict)
+
+# Verify signature and cryptographic hash integrity offline
+is_valid_sig = nti_badge.is_valid_signature(cert)
+is_valid_hash = nti_badge.verify_cert_integrity(cert)
+```
 
 
 ## What Makes It Different
@@ -39,38 +84,45 @@ Every scan produces a `nti-certificate.json` file that lives in **your** reposit
 ### 1. Add the workflow
 
 
-    name: NTI Verify
-    on: [push, pull_request]
-    permissions:
-      id-token: write
-      contents: read
-    jobs:
-      verify:
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v4
-          - uses: abisheakp197/nti-badge@v1
-          - name: Commit certificate
-            run: |
-              git config user.name "nti-bot"
-              git config user.email "bot@nti.local"
-              git add nti-certificate.json
-              git commit -m "chore: NTI certificate [skip ci]" || true
-              git push || true
+```yaml
+name: NTI Verify
+on: [push, pull_request]
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: abisheakp197/nti-badge@v1
+      - name: Commit certificate
+        run: |
+          git config user.name "nti-bot"
+          git config user.email "bot@nti.local"
+          git add nti-certificate.json
+          git commit -m "chore: NTI certificate [skip ci]" || true
+          git push || true
+```
 
 
 ### 2. Add the badge to your README
 
 
-    [![NTI-1 Verified](https://nti-badge-svs1.vercel.app/api/badge?repo=your-org/your-repo)](https://nti-badge-svs1.vercel.app/repo.html?repo=your-org/your-repo)
+```markdown
+[![NTI-1 Verified](https://nti-badge-svs1.vercel.app/api/badge?repo=your-org/your-repo)](https://nti-badge-svs1.vercel.app/repo.html?repo=your-org/your-repo)
+```
 
 
 ## Verify Offline
 
 
-    pip install nti-scanner
-    nti-scanner verify ./nti-certificate.json
+Using `nti-scanner`:
 
+```bash
+pip install nti-scanner
+nti-scanner verify ./nti-certificate.json
+```
 
 No network. No NTI servers. Just math.
 
@@ -109,6 +161,9 @@ Apache License 2.0. See LICENSE.
 ## Links
 
 
+- PyPI Package: https://pypi.org/project/nti-badge/
+- Live Service: https://nti-badge-svs1.vercel.app
+- Public Registry: https://nti-badge-svs1.vercel.app/api/registry
 - NTI-1 Spec: https://abisheakp197.github.io/nti-spec/
 - nti-scanner: https://pypi.org/project/nti-scanner/
 - ube-foundation: https://pypi.org/project/ube-foundation/

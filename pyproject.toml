@@ -1,7 +1,13 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "nti-badge"
 version = "0.1.0"
-description = "Federated compliance certificates for AI agent repositories"
+description = "Cryptographically signed, offline-verifiable compliance badge for AI agents"
+readme = "README.md"
+license = {text = "Apache-2.0"}
 requires-python = ">=3.11"
 dependencies = [
     "httpx>=0.27.0",
@@ -10,6 +16,10 @@ dependencies = [
     "cryptography>=42.0.0",
     "ube-foundation>=0.1.7",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["nti_badge*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
