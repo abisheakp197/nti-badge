@@ -10,4 +10,9 @@ node_modules/
 nti-report.json
 nti-sbom.json
 
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+
 # Note: nti-certificate.json should be COMMITTED by users to their repo so it becomes part of their permanent audit trail
