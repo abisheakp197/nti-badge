@@ -24,3 +24,6 @@ include = ["nti_badge*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+
+[tool.vercel]
+entrypoint = "api/index.py:handler"
