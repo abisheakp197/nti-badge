@@ -1,23 +1,18 @@
-"""Cold start: modules import without DB configured."""
+"""Cold start: all modules import cleanly."""
 
 
-def test_all_modules_import(clean_env):
-    import lib.mode
-    import lib.db
-    import lib.store
-    import lib.crypto
-    import lib.certificate
-    import lib.drift
-    import lib.tiers
-    import lib.spec
-    import lib.oidc
-    import lib.hub_store
-    import lib.aggregator
-    import lib.federation_client
-    assert True
-
-
-def test_mode_info_shape(clean_env):
-    from lib.mode import get_node_info
-    info = get_node_info()
-    assert "mode" in info
+def test_all_modules_import():
+    import benchmarks
+    import benchmarks.base
+    import benchmarks.langchain_bench
+    import benchmarks.crewai_bench
+    import benchmarks.autogen_bench
+    import benchmarks.maf_bench
+    import runner
+    import runner.run_benchmark
+    import runner.attestation
+    import cli
+    import cli.main
+    assert benchmarks is not None
+    assert runner is not None
+    assert cli is not None

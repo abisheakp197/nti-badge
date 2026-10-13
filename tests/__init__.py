@@ -1,1 +1,1 @@
-"""NTI Badge test suite."""
+"""NTI Benchmark test suite."""
