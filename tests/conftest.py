@@ -1,11 +1,16 @@
 """Shared fixtures for the NTI test suite."""
 
+import importlib
 import shutil
+from collections.abc import Generator
+from pathlib import Path
+from typing import Any
+
 import pytest
 
 
 @pytest.fixture(autouse=True)
-def clean_env(monkeypatch):
+def clean_env(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
     """Every test starts with a clean environment."""
     for var in ["NTI_MODE", "NTI_NODE_URL", "NTI_NODE_NAME", "KV_URL", "REDIS_URL",
                 "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN",
@@ -15,11 +20,11 @@ def clean_env(monkeypatch):
 
 
 @pytest.fixture
-def temp_store(tmp_path, monkeypatch):
+def temp_store(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Generator[Path, None, None]:
     """Temp directory for file-based DB tests."""
     store_dir = tmp_path / "nti-data"
     monkeypatch.setenv("NTI_LOCAL_STORE", str(store_dir))
-    import importlib
+
     import lib.db
     import lib.store
     importlib.reload(lib.db)
@@ -30,13 +35,13 @@ def temp_store(tmp_path, monkeypatch):
 
 
 @pytest.fixture
-def standalone_mode(monkeypatch):
+def standalone_mode(monkeypatch: pytest.MonkeyPatch) -> Generator[str, None, None]:
     monkeypatch.setenv("NTI_MODE", "standalone")
     yield "standalone"
 
 
 @pytest.fixture
-def federated_mode(monkeypatch):
+def federated_mode(monkeypatch: pytest.MonkeyPatch) -> Generator[str, None, None]:
     monkeypatch.setenv("NTI_MODE", "federated")
     monkeypatch.setenv("NTI_NODE_URL", "https://test-node.example.com")
     monkeypatch.setenv("NTI_HUB_URLS", "https://hub1.example.com,https://hub2.example.com")
@@ -44,7 +49,7 @@ def federated_mode(monkeypatch):
 
 
 @pytest.fixture
-def hub_mode(monkeypatch):
+def hub_mode(monkeypatch: pytest.MonkeyPatch) -> Generator[str, None, None]:
     monkeypatch.setenv("NTI_MODE", "hub")
     monkeypatch.setenv("NTI_NODE_URL", "https://test-hub.example.com")
     monkeypatch.setenv("NTI_HUB_URLS", "https://hub-upstream.example.com")
@@ -52,7 +57,7 @@ def hub_mode(monkeypatch):
 
 
 @pytest.fixture
-def sample_certificate():
+def sample_certificate() -> dict[str, Any]:
     return {
         "spec": "NTI-Cert/1",
         "issuer": "https://github.com/test/repo",
@@ -71,7 +76,7 @@ def sample_certificate():
 
 
 @pytest.fixture
-def valid_oidc_claim():
+def valid_oidc_claim() -> dict[str, Any]:
     return {
         "iss": "https://token.actions.githubusercontent.com",
         "aud": "nti-badge",

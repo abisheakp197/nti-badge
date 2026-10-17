@@ -6,8 +6,7 @@ Hub: Node aggregates indexes from other nodes. Can federate with other hubs.
 """
 
 import os
-from typing import Literal
-
+from typing import Any, Literal
 
 Mode = Literal["standalone", "federated", "hub"]
 
@@ -16,7 +15,7 @@ def get_mode() -> Mode:
     raw = os.environ.get("NTI_MODE", "standalone").strip().lower()
     if raw not in ("standalone", "federated", "hub"):
         return "standalone"
-    return raw  # type: ignore
+    return raw  # type: ignore[return-value]
 
 
 def is_standalone() -> bool:
@@ -31,14 +30,14 @@ def is_hub() -> bool:
     return get_mode() == "hub"
 
 
-def get_hub_urls() -> list:
+def get_hub_urls() -> list[str]:
     raw = os.environ.get("NTI_HUB_URLS", "").strip()
     if not raw:
         return []
     return [u.strip().rstrip("/") for u in raw.split(",") if u.strip()]
 
 
-def get_node_info() -> dict:
+def get_node_info() -> dict[str, Any]:
     return {
         "mode": get_mode(),
         "node_url": os.environ.get("NTI_NODE_URL", "").rstrip("/"),

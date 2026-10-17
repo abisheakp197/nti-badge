@@ -1,15 +1,17 @@
 """GET /api/federation — federation manifest. Respects NTI_MODE."""
+
 import json
+from typing import Any
 
 from lib.mode import get_mode, get_node_info
 
 
-async def run():
+async def run() -> tuple[int, dict[str, str], bytes]:
     headers = {"Content-Type": "application/json"}
     mode = get_mode()
     node = get_node_info()
 
-    manifest = {
+    manifest: dict[str, Any] = {
         "protocol": "NTI-Cert/1",
         "federation_version": "1.0",
         "mode": mode,

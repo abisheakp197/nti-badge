@@ -1,6 +1,8 @@
 """Compliance tier logic."""
-from nti_badge.spec import tier_for_score, TIERS
 
+from typing import Any
+
+from nti_badge.spec import TIERS, tier_for_score
 
 TIER_COLORS = {
     "Platinum": "#e5e4e2",
@@ -23,7 +25,7 @@ def assign_tier(score: int) -> str:
     return tier_for_score(score)
 
 
-def tier_metadata(tier: str) -> dict:
+def tier_metadata(tier: str) -> dict[str, Any]:
     return {
         "name": tier,
         "color": TIER_COLORS.get(tier, "#888"),

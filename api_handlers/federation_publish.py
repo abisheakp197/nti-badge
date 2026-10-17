@@ -1,11 +1,12 @@
 """POST /api/federation/publish — trigger an announce to all configured hubs."""
+
 import json
 
 from lib.federation_client import announce_to_all_hubs, can_announce
 from lib.mode import get_mode
 
 
-async def run():
+async def run() -> tuple[int, dict[str, str], bytes]:
     headers = {"Content-Type": "application/json"}
     if not can_announce():
         payload = {

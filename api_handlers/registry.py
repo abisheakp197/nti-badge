@@ -1,14 +1,15 @@
 """GET /api/registry — JSON list of all indexed certs."""
+
 import json
 
 from lib.store import list_all
 
 
-async def run():
+async def run() -> tuple[int, dict[str, str], bytes]:
     headers = {"Content-Type": "application/json"}
     try:
         entries = await list_all()
-    except Exception:
+    except Exception:  # noqa: BLE001
         entries = []
     payload = json.dumps({
         "spec": "NTI-Cert/1",

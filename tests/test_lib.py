@@ -1,16 +1,24 @@
 """Unit tests for library modules: crypto, oidc, store, certificate, tiers, drift, spec."""
+
 import time
+from pathlib import Path
+
 import pytest
-from lib.spec import CERT_SPEC, SUPPORTED_PROFILES, TIERS, tier_for_score
-from lib.crypto import compute_cert_hash, verify_cert_integrity, verify_dilithium_signature
-from lib.tiers import assign_tier, tier_metadata
+
+from lib import store
+from lib.certificate import parse_certificate, to_index_entry
+from lib.crypto import (
+    compute_cert_hash,
+    verify_cert_integrity,
+    verify_dilithium_signature,
+)
 from lib.drift import compute_drift, is_significant_regression
-from lib.certificate import parse_certificate, to_index_entry, is_valid_signature
-from lib.oidc import verify_oidc_claim, detect_provider
-import lib.store as store
+from lib.oidc import detect_provider, verify_oidc_claim
+from lib.spec import CERT_SPEC, tier_for_score
+from lib.tiers import assign_tier, tier_metadata
 
 
-def test_spec_and_tiers():
+def test_spec_and_tiers() -> None:
     assert tier_for_score(98) == "Platinum"
     assert tier_for_score(88) == "Gold"
     assert tier_for_score(75) == "Silver"
@@ -24,7 +32,7 @@ def test_spec_and_tiers():
     assert meta["emoji"] == "🥇"
 
 
-def test_crypto_hash_and_integrity():
+def test_crypto_hash_and_integrity() -> None:
     payload = {
         "spec": CERT_SPEC,
         "issuer": "nti",
@@ -48,11 +56,10 @@ def test_crypto_hash_and_integrity():
     payload_tampered = dict(payload_with_hash, score=50)
     assert verify_cert_integrity(payload_tampered) is False
 
-    # verify_dilithium_signature fallback returns False if ube_foundation import fails or isn't present
     assert isinstance(verify_dilithium_signature(payload_with_hash), bool)
 
 
-def test_drift_detection():
+def test_drift_detection() -> None:
     # First scan
     drift1 = compute_drift(None, {"score": 80})
     assert drift1["direction"] == "first_scan"
@@ -70,7 +77,7 @@ def test_drift_detection():
     assert is_significant_regression(drift3, threshold=10) is True
 
 
-def test_certificate_parsing():
+def test_certificate_parsing() -> None:
     raw_payload = {
         "spec": CERT_SPEC,
         "issuer": "nti",
@@ -84,8 +91,6 @@ def test_certificate_parsing():
         "issuer_pubkey": "0x123",
         "signature": "0xsig",
     }
-    # Note: cert_hash is calculated on payload without 'signature' or 'cert_hash'
-    # 'tier' is optional and not part of compute_cert_hash exclusions if it's in payload
     cert_hash = compute_cert_hash(raw_payload)
     cert = dict(raw_payload, cert_hash=cert_hash)
 
@@ -104,7 +109,7 @@ def test_certificate_parsing():
         parse_certificate(invalid_cert)
 
 
-def test_oidc_verification():
+def test_oidc_verification() -> None:
     now = time.time() + 300
     github_claim = {
         "iss": "https://token.actions.githubusercontent.com",
@@ -121,7 +126,7 @@ def test_oidc_verification():
 
 
 @pytest.mark.asyncio
-async def test_store_fallback_in_memory(temp_store):
+async def test_store_fallback_in_memory(temp_store: Path) -> None:
     # Without REDIS_URL, store returns empty structures gracefully
     assert await store.get_latest("owner/repo") is None
     assert await store.get_history("owner/repo") == []

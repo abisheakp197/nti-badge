@@ -1,11 +1,12 @@
 """GET /api/hub/nodes — list all registered nodes and hubs."""
+
 import json
 
+from lib.hub_store import list_hubs, list_nodes
 from lib.mode import is_hub
-from lib.hub_store import list_nodes, list_hubs
 
 
-async def run():
+async def run() -> tuple[int, dict[str, str], bytes]:
     headers = {"Content-Type": "application/json"}
     if not is_hub():
         return (403, headers, json.dumps({"error": "not a hub"}).encode("utf-8"))

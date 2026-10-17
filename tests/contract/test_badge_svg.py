@@ -1,8 +1,9 @@
 """Contract tests for /api/badge SVG output."""
+
 from api_handlers.badge import _badge_svg
 
 
-def test_badge_svg_valid_xml():
+def test_badge_svg_valid_xml() -> None:
     svg = _badge_svg("NTI-1", "not verified", "#555")
     assert svg.startswith("<svg")
     assert svg.endswith("</svg>")
@@ -10,11 +11,11 @@ def test_badge_svg_valid_xml():
     assert "not verified" in svg
 
 
-def test_badge_svg_has_aria_label():
+def test_badge_svg_has_aria_label() -> None:
     svg = _badge_svg("NTI-1", "95/100", "#4ade80")
     assert "aria-label" in svg
 
 
-def test_badge_svg_no_script_injection():
+def test_badge_svg_no_script_injection() -> None:
     svg = _badge_svg("NTI-1", "95/100", "#4ade80")
     assert "<script>" not in svg

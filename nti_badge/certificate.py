@@ -1,9 +1,9 @@
 """NTI-Cert/1 certificate parsing and validation."""
-from typing import Optional
 
-from nti_badge.spec import CERT_SPEC, SUPPORTED_PROFILES
+from typing import Any
+
 from nti_badge.crypto import verify_cert_integrity, verify_dilithium_signature
-
+from nti_badge.spec import CERT_SPEC, SUPPORTED_PROFILES
 
 REQUIRED_FIELDS = [
     "spec", "issuer", "issued_at", "id", "repo", "commit_sha",
@@ -12,8 +12,11 @@ REQUIRED_FIELDS = [
 ]
 
 
-def parse_certificate(payload: dict) -> dict:
+def parse_certificate(payload: dict[str, Any]) -> dict[str, Any]:
     """Validate structure and return normalized cert or raise ValueError."""
+    if not isinstance(payload, dict):
+        raise TypeError("Payload must be a dictionary")
+
     missing = [f for f in REQUIRED_FIELDS if f not in payload]
     if missing:
         raise ValueError(f"Missing required fields: {missing}")
@@ -33,11 +36,11 @@ def parse_certificate(payload: dict) -> dict:
     return payload
 
 
-def is_valid_signature(payload: dict) -> bool:
+def is_valid_signature(payload: dict[str, Any]) -> bool:
     return verify_dilithium_signature(payload)
 
 
-def to_index_entry(payload: dict) -> dict:
+def to_index_entry(payload: dict[str, Any]) -> dict[str, Any]:
     """Extract only the fields needed for the public registry index."""
     return {
         "repo": payload["repo"],

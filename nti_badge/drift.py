@@ -1,12 +1,13 @@
 """Score drift detection.
 
-
 Compares the new cert's score to the previous cert for the same repo.
 Triggers alerts on regressions.
 """
 
+from typing import Any
 
-def compute_drift(previous: dict, current: dict) -> dict:
+
+def compute_drift(previous: dict[str, Any] | None, current: dict[str, Any]) -> dict[str, Any]:
     prev_score = previous.get("score", 0) if previous else None
     curr_score = current.get("score", 0)
     if prev_score is None:
@@ -26,5 +27,7 @@ def compute_drift(previous: dict, current: dict) -> dict:
     }
 
 
-def is_significant_regression(drift: dict, threshold: int = 10) -> bool:
-    return drift["direction"] == "regressed" and abs(drift["delta"]) >= threshold
+def is_significant_regression(drift: dict[str, Any], threshold: int = 10) -> bool:
+    direction = drift.get("direction")
+    delta = drift.get("delta", 0)
+    return direction == "regressed" and abs(int(delta)) >= threshold

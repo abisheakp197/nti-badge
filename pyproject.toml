@@ -7,7 +7,7 @@ name = "nti-badge"
 version = "0.1.0"
 description = "Cryptographically signed, offline-verifiable compliance badge for AI agents"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 requires-python = ">=3.11"
 dependencies = [
     "httpx>=0.27.0",

@@ -1,16 +1,16 @@
 """Multi-provider OIDC verification.
 
-
 Supports GitHub Actions, GitLab CI, Google Cloud, Azure DevOps, and custom
 OIDC issuers. The badge is ecosystem-agnostic by design — it is a federated
 protocol, not a GitHub-only product.
 """
+
 import time
-from typing import Optional
+from typing import Any
 
 import httpx
 
-JWKS_CACHE = {}
+JWKS_CACHE: dict[str, dict[str, Any]] = {}
 JWKS_TTL = 3600
 
 PROVIDERS = {
@@ -37,33 +37,40 @@ PROVIDERS = {
 }
 
 
-async def fetch_jwks(provider: str) -> dict:
+async def fetch_jwks(provider: str) -> dict[str, Any]:
     entry = JWKS_CACHE.get(provider, {})
-    if entry.get("keys") and time.time() - entry.get("fetched_at", 0) < JWKS_TTL:
-        return entry["keys"]
+    if entry.get("keys") and time.time() - float(entry.get("fetched_at", 0)) < JWKS_TTL:
+        res_keys: dict[str, Any] = entry["keys"]
+        return res_keys
     cfg = PROVIDERS.get(provider)
     if not cfg:
         return {}
     async with httpx.AsyncClient(timeout=10) as client:
         r = await client.get(cfg["config_url"])
         r.raise_for_status()
-        jwks_uri = r.json().get("jwks_uri")
+        jwks_uri = str(r.json().get("jwks_uri"))
         r2 = await client.get(jwks_uri)
         r2.raise_for_status()
-        JWKS_CACHE[provider] = {"keys": r2.json(), "fetched_at": time.time()}
-        return r2.json()
+        keys_data: dict[str, Any] = r2.json()
+        JWKS_CACHE[provider] = {"keys": keys_data, "fetched_at": time.time()}
+        return keys_data
 
 
-def detect_provider(payload: dict) -> Optional[str]:
-    iss = payload.get("iss", "")
+def detect_provider(payload: dict[str, Any]) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+    iss = str(payload.get("iss", ""))
     for name, cfg in PROVIDERS.items():
         if cfg["config_url"].split("/.well-known")[0] in iss:
             return name
     return None
 
 
-def verify_oidc_claim(token_payload: dict, expected_repo: Optional[str] = None) -> Optional[dict]:
+def verify_oidc_claim(token_payload: dict[str, Any], expected_repo: str | None = None) -> dict[str, Any] | None:
     """Validate OIDC claims. Returns normalized identity or None."""
+    if not isinstance(token_payload, dict):
+        return None
+
     provider = detect_provider(token_payload)
     if not provider:
         return None
@@ -71,7 +78,7 @@ def verify_oidc_claim(token_payload: dict, expected_repo: Optional[str] = None) 
     cfg = PROVIDERS[provider]
 
     exp = token_payload.get("exp", 0)
-    if exp < time.time():
+    if not isinstance(exp, (int, float)) or exp < time.time():
         return None
 
     aud = token_payload.get("aud")

@@ -8,15 +8,16 @@ the node's public index on-demand. This preserves node sovereignty.
 """
 
 import asyncio
+from typing import Any
+
 import httpx
 
 from lib.mode import get_hub_urls, get_node_info, is_federated, is_hub
 
-
 TIMEOUT = 10.0
 
 
-async def announce_to_hub(hub_url: str) -> dict:
+async def announce_to_hub(hub_url: str) -> dict[str, Any]:
     """Announce this node to a hub. Hub stores node URL; pulls index on demand."""
     node = get_node_info()
     payload = {
@@ -34,16 +35,17 @@ async def announce_to_hub(hub_url: str) -> dict:
             if r.status_code == 200:
                 return {"hub": hub_url, "ok": True, "response": r.json()}
             return {"hub": hub_url, "ok": False, "status": r.status_code}
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return {"hub": hub_url, "ok": False, "error": str(e)}
 
 
-async def announce_to_all_hubs() -> list:
+async def announce_to_all_hubs() -> list[dict[str, Any]]:
     hubs = get_hub_urls()
     if not hubs:
         return []
     tasks = [announce_to_hub(h) for h in hubs]
-    return await asyncio.gather(*tasks)
+    results: list[dict[str, Any]] = list(await asyncio.gather(*tasks))
+    return results
 
 
 def can_announce() -> bool:

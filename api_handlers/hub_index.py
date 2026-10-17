@@ -1,11 +1,12 @@
 """GET /api/hub/index — aggregated index from all registered nodes."""
+
 import json
 
-from lib.mode import is_hub
 from lib.aggregator import aggregate_index
+from lib.mode import is_hub
 
 
-async def run():
+async def run() -> tuple[int, dict[str, str], bytes]:
     headers = {"Content-Type": "application/json"}
     if not is_hub():
         return (403, headers, json.dumps({"error": "not a hub"}).encode("utf-8"))
