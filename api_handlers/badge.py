@@ -3,7 +3,8 @@
 Renders a tiered badge based on the latest indexed cert for the repo.
 If no cert is indexed, returns a grey "not verified" badge.
 """
-from urllib.parse import urlparse, parse_qs
+
+from urllib.parse import parse_qs, urlparse
 
 from lib.store import get_latest
 from lib.tiers import tier_metadata
@@ -14,7 +15,7 @@ def _badge_svg(label: str, value: str, color: str, tier_emoji: str = "") -> str:
     return render_badge_svg(label, value, color, tier_emoji)
 
 
-async def run(self_path: str = ""):
+async def run(self_path: str = "") -> tuple[int, dict[str, str], bytes]:
     query_str = urlparse(self_path).query if "?" in self_path else self_path
     params = parse_qs(query_str)
     repo = params.get("repo", [""])[0]
@@ -29,7 +30,7 @@ async def run(self_path: str = ""):
 
     try:
         entry = await get_latest(repo)
-    except Exception:
+    except Exception:  # noqa: BLE001
         entry = None
 
     if not entry:

@@ -1,8 +1,9 @@
-"""Unit tests for lib/tiers.py"""
+"""Unit tests for lib/tiers.py."""
+
 from lib.tiers import assign_tier, tier_metadata
 
 
-def test_tier_boundaries():
+def test_tier_boundaries() -> None:
     assert assign_tier(100) == "Platinum"
     assert assign_tier(95) == "Platinum"
     assert assign_tier(94) == "Gold"
@@ -14,7 +15,7 @@ def test_tier_boundaries():
     assert assign_tier(49) == "Unranked"
 
 
-def test_tier_metadata():
+def test_tier_metadata() -> None:
     m = tier_metadata("Platinum")
     assert m["name"] == "Platinum"
     assert "color" in m

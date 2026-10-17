@@ -1,14 +1,17 @@
 """Contract test: /api/registry schema."""
+
 import asyncio
+from pathlib import Path
+
 from lib.store import list_all
 
 
-def test_registry_returns_list(temp_store):
+def test_registry_returns_list(temp_store: Path) -> None:
     entries = asyncio.run(list_all())
     assert isinstance(entries, list)
 
 
-def test_registry_spec_field():
+def test_registry_spec_field() -> None:
     payload = {
         "spec": "NTI-Cert/1",
         "count": 0,

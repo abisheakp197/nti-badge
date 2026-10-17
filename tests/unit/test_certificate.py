@@ -1,44 +1,54 @@
-"""Unit tests for lib/certificate.py"""
+"""Unit tests for lib/certificate.py."""
+
+from typing import Any
+
 import pytest
+
 from lib.certificate import parse_certificate, to_index_entry
 from lib.crypto import compute_cert_hash
 
 
-def _signed(sample_certificate):
-    c = dict(sample_certificate); c["cert_hash"] = compute_cert_hash(c); return c
+def _signed(sample_certificate: dict[str, Any]) -> dict[str, Any]:
+    c = dict(sample_certificate)
+    c["cert_hash"] = compute_cert_hash(c)
+    return c
 
 
-def test_parse_valid_certificate(sample_certificate):
+def test_parse_valid_certificate(sample_certificate: dict[str, Any]) -> None:
     parsed = parse_certificate(_signed(sample_certificate))
     assert parsed["repo"] == "test/repo"
     assert parsed["score"] == 95
 
 
-def test_parse_rejects_missing_fields(sample_certificate):
-    bad = dict(sample_certificate); del bad["repo"]
+def test_parse_rejects_missing_fields(sample_certificate: dict[str, Any]) -> None:
+    bad = dict(sample_certificate)
+    del bad["repo"]
     with pytest.raises(ValueError):
         parse_certificate(bad)
 
 
-def test_parse_rejects_wrong_spec(sample_certificate):
-    bad = _signed(sample_certificate); bad["spec"] = "NTI-Cert/2"
+def test_parse_rejects_wrong_spec(sample_certificate: dict[str, Any]) -> None:
+    bad = _signed(sample_certificate)
+    bad["spec"] = "NTI-Cert/2"
     with pytest.raises(ValueError):
         parse_certificate(bad)
 
 
-def test_parse_rejects_invalid_score(sample_certificate):
-    bad = _signed(sample_certificate); bad["score"] = 150
+def test_parse_rejects_invalid_score(sample_certificate: dict[str, Any]) -> None:
+    bad = _signed(sample_certificate)
+    bad["score"] = 150
     with pytest.raises(ValueError):
         parse_certificate(bad)
 
 
-def test_parse_rejects_tampered_hash(sample_certificate):
-    bad = _signed(sample_certificate); bad["cert_hash"] = "0" * 64
+def test_parse_rejects_tampered_hash(sample_certificate: dict[str, Any]) -> None:
+    bad = _signed(sample_certificate)
+    bad["cert_hash"] = "0" * 64
     with pytest.raises(ValueError):
         parse_certificate(bad)
 
 
-def test_to_index_entry_extracts_public_fields(sample_certificate):
+def test_to_index_entry_extracts_public_fields(sample_certificate: dict[str, Any]) -> None:
     cert = _signed(sample_certificate)
     entry = to_index_entry(cert)
     assert entry["repo"] == "test/repo"

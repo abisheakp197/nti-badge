@@ -1,12 +1,13 @@
 """GET /api/org?name=<org> — aggregate all repos under an org or user."""
+
 import json
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from lib.store import list_by_org
 from lib.tiers import assign_tier
 
 
-async def run(self_path: str = ""):
+async def run(self_path: str = "") -> tuple[int, dict[str, str], bytes]:
     headers = {"Content-Type": "application/json"}
     query_str = urlparse(self_path).query if "?" in self_path else self_path
     params = parse_qs(query_str)
@@ -17,7 +18,7 @@ async def run(self_path: str = ""):
 
     try:
         repos = await list_by_org(org)
-    except Exception:
+    except Exception:  # noqa: BLE001
         repos = []
 
     if not repos:

@@ -1,11 +1,12 @@
 """GET /api/certificate?repo=owner/repo — returns the latest indexed cert metadata."""
+
 import json
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
-from lib.store import get_latest, get_history
+from lib.store import get_history, get_latest
 
 
-async def run(self_path: str = ""):
+async def run(self_path: str = "") -> tuple[int, dict[str, str], bytes]:
     headers = {"Content-Type": "application/json"}
     query_str = urlparse(self_path).query if "?" in self_path else self_path
     params = parse_qs(query_str)
@@ -17,7 +18,7 @@ async def run(self_path: str = ""):
     try:
         latest = await get_latest(repo)
         history = await get_history(repo, 50)
-    except Exception:
+    except Exception:  # noqa: BLE001
         latest = None
         history = []
 
