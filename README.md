@@ -167,3 +167,57 @@ Apache License 2.0. See LICENSE.
 - NTI-1 Spec: https://abisheakp197.github.io/nti-spec/
 - nti-scanner: https://pypi.org/project/nti-scanner/
 - ube-foundation: https://pypi.org/project/ube-foundation/
+
+
+## Architecture
+
+```mermaid
+graph TD
+    subgraph Client Request["Client Request"]
+        VERIFY_REQ["API Verification Request<br/><code>POST /api/verify</code><br/>(OIDC Token + Cert Payload)"]
+        BADGE_REQ["Badge Generation Request<br/><code>GET /api/badge?repo=owner/repo</code>"]
+    end
+
+    subgraph Verification Engine["Verification Engine"]
+        OIDC_VAL["OIDC Validator<br/><code>verify_oidc_claim()</code><br/>(GitHub, GitLab, Google, Azure)"]
+        REPO_CHECK{"Repo Claim Matches<br/>Certificate Repo?"}
+        JSON_HASH["Canonical JSON Hasher<br/><code>compute_cert_hash()</code><br/>(SHA-256 without sig/hash)"]
+        INTEG_CHECK{"Hash Integrity<br/>Matches Payload?"}
+        PQC_VERIFY["PQC Signature Verifier<br/><code>verify_dilithium_signature()</code>"]
+        SIG_CHECK{"Dilithium5 Signature<br/>Valid?"}
+    end
+
+    subgraph Crypto Engine["Crypto Engine"]
+        KEYPAIR["ube_foundation.PqcKeyPair<br/>(Issuer Public Key Lookup)"]
+        DILITHIUM["Dilithium5 Algorithm<br/>(Post-Quantum Verification)"]
+    end
+
+    subgraph Storage & Response["Storage & Response"]
+        INDEXER["KV Store / DB Indexer<br/><code>index_certificate()</code><br/>(Indexes score, hash & drift)"]
+        STORE[(Database / KV Index)]
+        RENDERER["SVG Badge Renderer<br/><code>render_badge_svg()</code>"]
+        JSON_RESP["JSON Verification Response<br/><code>status: indexed</code>"]
+        SVG_RESP["SVG Badge Image<br/>(Tier, Score, Color)"]
+    end
+
+    VERIFY_REQ --> OIDC_VAL
+    OIDC_VAL --> REPO_CHECK
+    REPO_CHECK -- No --> REJ1["401 / 403 Error Response"]
+    REPO_CHECK -- Yes --> JSON_HASH
+    JSON_HASH --> INTEG_CHECK
+    INTEG_CHECK -- Tampered --> REJ2["400 Certificate Mismatch"]
+    INTEG_CHECK -- Valid --> PQC_VERIFY
+
+    PQC_VERIFY --> KEYPAIR
+    KEYPAIR --> DILITHIUM
+    DILITHIUM --> SIG_CHECK
+    SIG_CHECK -- Invalid --> REJ3["Unverified Signature Flag"]
+    SIG_CHECK -- Valid --> INDEXER
+
+    INDEXER --> STORE
+    INDEXER --> JSON_RESP
+
+    BADGE_REQ --> STORE
+    STORE --> RENDERER
+    RENDERER --> SVG_RESP
+```
